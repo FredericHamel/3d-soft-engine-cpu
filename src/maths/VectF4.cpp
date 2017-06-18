@@ -1,25 +1,23 @@
 #include "VectF4.h"
 
-
 // -----------------------------------------------------------------------------
 // VectF4 Constructors
 // -----------------------------------------------------------------------------
-VectF4::VectF4(void) :x(0.0f), y(0.0f), z(0.0f), w(0.0f) {};
-
-VectF4::VectF4(float x, float y, float z, float w) 
-    : x(x),
-      y(y),
-      z(z),
-      w(w) {
+VectF4::VectF4(void) {
+  this->v = _mm_setzero_ps();
 }
 
-VectF4::VectF4(VectF4 const& v)
-    : x(v.x),
-      y(v.y),
-      z(v.z),
-      w(v.w) {
-};
+VectF4::VectF4(float x, float y, float z, float w) {
+  this->v = _mm_set_ps(z, y, x, w);
+}
 
+VectF4::VectF4(VectF4 const& v) {
+  this->v = v.v;
+}
+
+VectF4::VectF4(const __m128 &v) {
+  this->v = v;
+}
 
 // -----------------------------------------------------------------------------
 // VectF4 functions
@@ -33,105 +31,52 @@ float VectF4::length3() const {
 }
 
 float VectF4::squareLength() const {
-    return (x*x) + (y*y) + (z*z) + (w*w);
+    __m128 v = this->v * this->v;
+    return v[0] + v[1] + v[2] + v[3];
 }
 
 float VectF4::squareLength3() const {
-    return (x*x) + (y*y) + (z*z);
+    __m128 v = _mm_mul_ps(this->v, this->v);
+    return v[0] + v[1] + v[2];
 }
 
 VectF4 VectF4::normalize() const {
     float l = this->length();
-    VectF4 v(x/l, y/l, z/l, w/l);
+    VectF4 v(this->v / l);
     return v;
 }
 
 VectF4 VectF4::normalize3() const {
     float l = this->length3();
-    VectF4 v(x/l, y/l, z/l, 0.0f);
+    __m128 r = this->v / l;
+    r[3] = 0.0f;
+    VectF4 v(r);
     return v;
 }
 
-void VectF4::set(float const x, float const y, float const z, float const w) {
-    this->x = x;
-    this->y = y;
-    this->z = z;
-    this->w = w;
+void VectF4::set(float x, float y, float z, float w) {
+  this->v = _mm_set_ps(z, y, x, w);
 }
 
 void VectF4::set(VectF4 const& v) {
-    this->x = v.x;
-    this->y = v.y;
-    this->z = v.z;
-    this->w = v.w;
+  this->v = v.v;
 }
 
 float VectF4::dotProduct(VectF4 const& v1, VectF4 const& v2) {
-    return (v1.x * v2.x) + (v1.y * v2.y) + (v1.z * v2.z) + (v1.w * v2.w);
+  __m128 prod = v1.v * v2.v; 
+  return prod[0] + prod[1] + prod[2] + prod[3];
 }
 
 float VectF4::dotProduct3(VectF4 const& v1, VectF4 const& v2) {
-    return (v1.x * v2.x) + (v1.y * v2.y) + (v1.z * v2.z);
+    __m128 prod = v1.v * v2.v;
+    return prod[0] + prod[1] + prod[2] + prod[3];
 }
 
-
-// -----------------------------------------------------------------------------
-// VectF4 Operators overload
-// -----------------------------------------------------------------------------
-bool VectF4::operator==(VectF4 const& v) const{
-    return  this->x == v.x &&
-            this->y == v.y &&
-            this->z == v.z &&
-            this->w == v.w;
-}
-bool VectF4::operator!=(VectF4 const& v) const{
-    return  this->x != v.x ||
-            this->y != v.y ||
-            this->z != v.z ||
-            this->w != v.w;
-}
-VectF4 VectF4::operator*(float const s) const{
-    return VectF4(x*s, y*s, z*s, w*s);
-}
-VectF4 VectF4::operator/(float const s) const{
-    return VectF4(x/s, y/s, z/s, w/s);
-}
-VectF4 VectF4::operator+(VectF4 const& v) const{
-    return VectF4(x+v.x, y+v.y, z+v.z, w+v.w);
-}
-VectF4 VectF4::operator-(VectF4 const& v) const{
-    return VectF4(x-v.x, y-v.y, z-v.z, w-v.w);
-}
-
-VectF4& VectF4::operator*=(float const s){
-    this->x = this->x * s;
-    this->y = this->y * s;
-    this->z = this->z * s;
-    this->w = this->w * s;
-    return *this;
-}
-VectF4& VectF4::operator/=(float const s){
-    this->x = this->x / s;
-    this->y = this->y / s;
-    this->z = this->z / s;
-    this->w = this->w / s;
-    return *this;
-}
-VectF4& VectF4::operator+=(VectF4 const& v){
-    this->x = this->x + v.x;
-    this->y = this->y + v.y;
-    this->z = this->z + v.z;
-    this->w = this->w + v.w;
-    return *this;
-}
-VectF4& VectF4::operator-=(VectF4 const& v){
-    this->x = this->x - v.x;
-    this->y = this->y - v.y;
-    this->z = this->z - v.z;
-    this->w = this->w - v.w;
-    return *this;
-}
 std::ostream& operator<<(std::ostream &os, VectF4 const& v){
-    os << "(" << v.x << ", " << v.y << ", " << v.z << ", " << v.w << ")";
+    os << "(" << VECTF4_X(v)
+      << ", " << VECTF4_Y(v)
+      << ", " << VECTF4_Z(v)
+      << ", " << VECTF4_W(v)
+      << ")";
     return os;
 }

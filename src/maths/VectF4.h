@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <xmmintrin.h>
 
 /**
  * 4 Dimensions vector with float precision.
@@ -15,10 +16,7 @@ class VectF4 {
     // Attributes
     // -------------------------------------------------------------------------
     public:
-        float x;
-        float y;
-        float z;
-        float w;
+      __m128 v;
 
     // -------------------------------------------------------------------------
     // Constructors
@@ -27,6 +25,7 @@ class VectF4 {
         VectF4(void);
         VectF4(float x, float y, float z, float w);
         VectF4(VectF4 const& v);
+        VectF4(const __m128 &v);
 
     // -------------------------------------------------------------------------
     // Functions (Object range)
@@ -85,7 +84,7 @@ class VectF4 {
          * \param z New z coordinate.
          * \param w New w coordinate.
          */
-        void set(float const x, float const y, float const z, float const w);
+        void set(float x, float y, float z, float w);
 
         /**
          * Change axis values by the given vector values
@@ -123,24 +122,33 @@ class VectF4 {
     // -------------------------------------------------------------------------
     public:
         // Comparison operators
-        inline bool operator==(VectF4 const& v) const;
-        inline bool operator!=(VectF4 const& v) const;
+        bool operator==(VectF4 const& v) const;
+        bool operator!=(VectF4 const& v) const;
 
     public:
         // Arithmetic operators
-        inline VectF4 operator*(float const s) const;
-        inline VectF4 operator/(float const s) const;
-        inline VectF4 operator+(VectF4 const& v) const;
-        inline VectF4 operator-(VectF4 const& v) const;
+        VectF4 operator*(float const s) const;
+        VectF4 operator/(float const s) const;
+        VectF4 operator+(VectF4 const& v) const;
+        VectF4 operator-(VectF4 const& v) const;
 
-        inline VectF4& operator*=(float const s);
-        inline VectF4& operator/=(float const s);
-        inline VectF4& operator+=(VectF4 const& v);
-        inline VectF4& operator-=(VectF4 const& v);
+        VectF4& operator*=(float const s);
+        VectF4& operator/=(float const s);
+        VectF4& operator+=(VectF4 const& v);
+        VectF4& operator-=(VectF4 const& v);
 
         // Flux operators
         friend std::ostream& operator<<(std::ostream& os, VectF4 const& v);
 };
+
+#define VECTF4_X(obj) (obj.v)[0]
+#define VECTF4_Y(obj) (obj.v)[1]
+#define VECTF4_Z(obj) (obj.v)[2]
+#define VECTF4_W(obj) (obj.v)[3]
+
+#ifndef __VECTF4_INLINE
+#  include "./VectF4.inl"
+#endif
 
 #endif
 
