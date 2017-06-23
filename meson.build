@@ -1,5 +1,5 @@
 project('3d-soft-engine', 'cpp')
-compiler = meson.get_compiler('cpp')
+cxx_compiler = meson.get_compiler('cpp')
 code = '''#include <x86intrin.h>
 int main(int argc, char **argv) {
   __m128 m = _mm_setr_ps(1.0f,1.0f,1.0f,1.0f);
@@ -7,12 +7,15 @@ int main(int argc, char **argv) {
   return 0;
 }
 '''
-
-result = compiler.run(code, args : '-msse4.1', name : 'check sse4.1')
-if result.returncode() == 0
-  add_global_arguments('-msse4.1', language : 'cpp')
+cxx_compiler_id = cxx_compiler.get_id()
+if cxx_compiler_id == 'gcc'
+  result = cxx_compiler.run(code, args : '-msse4.1', name : 'check sse4.1')
+  if result.returncode() == 0
+    add_global_arguments('-msse4.1', language : 'cpp')
+  endif
+else
+  message('Compiler ' + cxx_compiler_id + ' not tested for sse4.1')
 endif
-
 
 threads = dependency('threads')
 gtest_dep = dependency('gtest', required : false)
