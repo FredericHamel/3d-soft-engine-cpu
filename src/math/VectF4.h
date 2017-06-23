@@ -1,8 +1,9 @@
-#ifndef ENGINE_MATH_VECTF4_H_
-#define ENGINE_MATH_VECTF4_H_
+#ifndef ENGINE_MATHS_VECTF4_H_
+#define ENGINE_MATHS_VECTF4_H_
 
 #include <iostream>
 #include <cmath>
+#include <x86intrin.h>
 
 /**
  * 4 Dimensions vector with float precision.
@@ -15,11 +16,16 @@ class VectF4 {
     // Attributes
     // -------------------------------------------------------------------------
     public:
-        float x;
-        float y;
-        float z;
-        float w;
-
+#ifdef __SSE_4_1__
+      union {
+        __m128 v;
+        struct {
+          float x, y, z, w;
+        };
+      };
+#else
+      float x, y, z, w;
+#endif
 
     // -------------------------------------------------------------------------
     // Constructors
@@ -27,10 +33,14 @@ class VectF4 {
     public:
         VectF4(void);
         explicit VectF4(float x, float y, float z, float w);
-
+        VectF4(VectF4 const& v);
+#ifdef __SSE_4_1__
+    private:   
+        VectF4(const __m128 &v);
+#endif
 
     // -------------------------------------------------------------------------
-    // Functions
+    // Functions (Object range)
     // -------------------------------------------------------------------------
     public:
         /**
@@ -101,12 +111,12 @@ class VectF4 {
          * \param z New z coordinate.
          * \param w New w coordinate.
          */
-        void set(float const x, float const y, float const z, float const w);
+        void set(float x, float y, float z, float w);
 
         /**
-         * Change axis values by the given vector values.
+         * Change axis values by the given vector values
          *
-         * \param v Vector to use as copy.
+         * \param v Vector to use as copy
          */
         void set(VectF4 const& v);
 
@@ -159,164 +169,14 @@ class VectF4 {
         friend std::ostream& operator<<(std::ostream& os, VectF4 const& v);
 };
 
+#define VECTF4_X(obj) (obj.v)[0]
+#define VECTF4_Y(obj) (obj.v)[1]
+#define VECTF4_Z(obj) (obj.v)[2]
+#define VECTF4_W(obj) (obj.v)[3]
 
-// *********************** INLINES *********************************************
-
-
-// -----------------------------------------------------------------------------
-// Constructors
-// -----------------------------------------------------------------------------
-inline VectF4::VectF4(void) :x(0.0f), y(0.0f), z(0.0f), w(0.0f) {};
-
-inline VectF4::VectF4(float x, float y, float z, float w) 
-    : x(x),
-      y(y),
-      z(z),
-      w(w) {
-}
-
-
-// -----------------------------------------------------------------------------
-// Functions
-// -----------------------------------------------------------------------------
-inline float VectF4::length() const {
-    return sqrt(this->squareLength());
-}
-
-inline float VectF4::length3() const {
-    return sqrt(this->squareLength3());
-}
-
-inline float VectF4::squareLength() const {
-    return (x*x) + (y*y) + (z*z) + (w*w);
-}
-
-inline float VectF4::squareLength3() const {
-    return (x*x) + (y*y) + (z*z);
-}
-
-inline VectF4 VectF4::normalize() const {
-    float l = this->length();
-    VectF4 v(x/l, y/l, z/l, w/l);
-    return v;
-}
-
-inline VectF4 VectF4::normalize3() const {
-    float l = this->length3();
-    VectF4 v(x/l, y/l, z/l, 0.0f);
-    return v;
-}
-
-inline VectF4 VectF4::crossProduct3(VectF4 const& v) const {
-    return VectF4(
-        (y*v.z) - (z*v.y),
-        (z*v.x) - (x*v.z),
-        (x*v.y) - (y*v.x),
-        0.0f
-    );
-}
-
-
-// -----------------------------------------------------------------------------
-// Getters - Setters
-// -----------------------------------------------------------------------------
-inline void VectF4::set(float const x, float const y, float const z, float const w) {
-    this->x = x;
-    this->y = y;
-    this->z = z;
-    this->w = w;
-}
-
-inline void VectF4::set(VectF4 const& v) {
-    this->x = v.x;
-    this->y = v.y;
-    this->z = v.z;
-    this->w = v.w;
-}
-
-
-// -----------------------------------------------------------------------------
-// Static functions
-// -----------------------------------------------------------------------------
-float VectF4::dotProduct(VectF4 const& v1, VectF4 const& v2) {
-    return (v1.x * v2.x) + (v1.y * v2.y) + (v1.z * v2.z) + (v1.w * v2.w);
-}
-
-float VectF4::dotProduct3(VectF4 const& v1, VectF4 const& v2) {
-    return (v1.x * v2.x) + (v1.y * v2.y) + (v1.z * v2.z);
-}
-
-
-// -----------------------------------------------------------------------------
-// Operators overload
-// -----------------------------------------------------------------------------
-inline bool VectF4::operator==(VectF4 const& v) const{
-    return  this->x == v.x &&
-            this->y == v.y &&
-            this->z == v.z &&
-            this->w == v.w;
-}
-
-inline bool VectF4::operator!=(VectF4 const& v) const{
-    return  this->x != v.x ||
-            this->y != v.y ||
-            this->z != v.z ||
-            this->w != v.w;
-}
-
-inline VectF4 VectF4::operator*(float const s) const{
-    return VectF4(x*s, y*s, z*s, w*s);
-}
-
-inline VectF4 VectF4::operator/(float const s) const{
-    return VectF4(x/s, y/s, z/s, w/s);
-}
-
-inline VectF4 VectF4::operator+(VectF4 const& v) const{
-    return VectF4(x+v.x, y+v.y, z+v.z, w+v.w);
-}
-
-inline VectF4 VectF4::operator-(VectF4 const& v) const{
-    return VectF4(x-v.x, y-v.y, z-v.z, w-v.w);
-}
-
-inline VectF4& VectF4::operator*=(float const s){
-    this->x = this->x * s;
-    this->y = this->y * s;
-    this->z = this->z * s;
-    this->w = this->w * s;
-    return *this;
-}
-
-inline VectF4& VectF4::operator/=(float const s){
-    this->x = this->x / s;
-    this->y = this->y / s;
-    this->z = this->z / s;
-    this->w = this->w / s;
-    return *this;
-}
-
-inline VectF4& VectF4::operator+=(VectF4 const& v){
-    this->x = this->x + v.x;
-    this->y = this->y + v.y;
-    this->z = this->z + v.z;
-    this->w = this->w + v.w;
-    return *this;
-}
-
-inline VectF4& VectF4::operator-=(VectF4 const& v){
-    this->x = this->x - v.x;
-    this->y = this->y - v.y;
-    this->z = this->z - v.z;
-    this->w = this->w - v.w;
-    return *this;
-}
-
-inline std::ostream& operator<<(std::ostream &os, VectF4 const& v){
-    os << "(" << v.x << ", " << v.y << ", " << v.z << ", " << v.w << ")";
-    return os;
-}
-
+#ifndef __VECTF4_INLINE
+#  include "./VectF4.inl"
+#endif
 
 #endif
 
