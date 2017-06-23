@@ -1,5 +1,18 @@
 project('3d-soft-engine', 'cpp')
-add_global_arguments('-msse4.1', language : 'cpp')
+compiler = meson.get_compiler('cpp')
+code = '''#include <x86intrin.h>
+int main(int argc, char **argv) {
+  __m128 m = _mm_setr_ps(1.0f,1.0f,1.0f,1.0f);
+  m = _mm_hadd_ps(m, m);
+  return 0;
+}
+'''
+
+result = compiler.run(code, args : '-msse4.1', name : 'check sse4.1')
+if result.returncode() == 0
+  add_global_arguments('-msse4.1', language : 'cpp')
+endif
+
 
 threads = dependency('threads')
 gtest_dep = dependency('gtest', required : false)

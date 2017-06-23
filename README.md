@@ -10,4 +10,4 @@ It can be installed using pip.
 
 TODO
 =======
-Add tests for sse4.1 support for cpu in meson.build.
+- Add tests for sse4.1 support for cpu in meson.build. (DONE!!!)
