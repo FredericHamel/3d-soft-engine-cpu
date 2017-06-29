@@ -1,4 +1,6 @@
 # 3d-software-engine-cpu
+### Status
+[![Build Status](https://travis-ci.org/FredericHamel/3d-soft-engine-cpu.png)](https://travis-ci.org/FredericHamel/3d-soft-engine-cpu)
 
 Build instruction
 ======================
