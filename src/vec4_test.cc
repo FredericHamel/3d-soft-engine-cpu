@@ -58,10 +58,12 @@ TEST_F(VectF4_Test, length3) {
 }
 
 TEST_F(VectF4_Test, normalize) {
-  EXPECT_VECTOR_VALUES_EQ(v2.normalize(), 0.31311215f, 0.438357f, 0.56360186f, 0.62622429f);
+  EXPECT_FLOAT_EQ(v2.normalize().length(), 1.0f);
+  EXPECT_VECTOR_VALUES_EQ(v2.normalize(), 0.31311215f, 0.438357f, 0.56360186f, 0.62622428f);
 }
 
 TEST_F(VectF4_Test, normalize3) {
+  EXPECT_FLOAT_EQ(v2.normalize3().length3(), 1.0f);
   EXPECT_VECTOR_VALUES_EQ(v2.normalize3(), 0.40160966f,  0.56225353f,  0.7228974f, 0.0f);
 }
 
