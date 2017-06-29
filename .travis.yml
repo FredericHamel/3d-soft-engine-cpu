@@ -1,4 +1,9 @@
 sudo: false
+
+branches:
+  only:
+  - master
+
 language: cpp
 group: beta
 
