@@ -22,7 +22,7 @@ before_install:
   - sudo pip3 install meson
 
 script:
-  - meson . build --cross-file win64.txt
+  - meson . build
   - cd build
   - ninja
   - ninja test
