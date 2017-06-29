@@ -16,7 +16,7 @@ class VectF4 {
     // Attributes
     // -------------------------------------------------------------------------
     public:
-#ifdef __SSE_4_1__
+#ifdef __SSE4_1__
       union {
         __m128 v;
         struct {
@@ -34,7 +34,7 @@ class VectF4 {
         VectF4(void);
         explicit VectF4(float x, float y, float z, float w);
         VectF4(VectF4 const& v);
-#ifdef __SSE_4_1__
+#ifdef __SSE4_1__
     private:   
         VectF4(const __m128 &v);
 #endif
