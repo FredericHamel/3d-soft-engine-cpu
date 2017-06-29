@@ -4,25 +4,25 @@ branches:
   only:
   - master
 
-language: cpp
-group: beta
+os:
+  - linux
 
-matrix:
-  include:
-    - os: linux
-      dist: trusty
-    - os: osx
+services:
+  - docker
 
-install:
-  - export PATH="`pwd`/build:${PATH}"
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update && brew install python3 ninja; fi
-  - |
-    if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then \
-      wget https://github.com/ninja-build/ninja/releases/download/v1.7.2/ninja-linux.zip && unzip -q ninja-linux.zip -d build; \
-    fi
-  - pip3 install meson
+before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ninja python3; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pip3 install meson; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then docker pull fhamel0/mesonci:archlinux
 
 script:
-  - meson builddir
-  - ninja -C builddir
-  - ninja -C builddir test
+  - |
+    if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then \
+      echo FROM fhamel0/mesonci > Dockerfile \
+      echo ADD . /root >> Dockerfile \
+      docker build -t withgit . \
+      docker run withgit /bin/sh -c "cd /root && TRAVIS=true CC=$CC CXX=$CXX meson builddir && ninja -C builddir test"
+    fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then SDKROOT=$(xcodebuild -version -sdk macosx Path) meson builddir && ninja -C builddir test; fi
+
