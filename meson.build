@@ -29,7 +29,13 @@ else
   gtest_lib = shared_library('gtest', gtest_libsrc,
       include_directories : gtest_incdir,
       dependencies : threads,
-      install : false)
+      install : false,
+      native : false)
+  gtest_lib_native = shared_library('gtest-native', gtest_libsrc,
+      include_directories : gtest_incdir,
+      dependencies : threads,
+      install : false,
+      native : true)
 endif
 
 inc = include_directories('src')
@@ -39,8 +45,18 @@ e1 = executable('vec4_test',
     sources : ['src/vec4_test.cc'],
     include_directories : inc,
     link_with : gtest_lib,
-    dependencies : gtest_dep)
+    dependencies : gtest_dep,
+    native : false)
+
+e2 = executable('vec4_test_native', 
+    sources : ['src/vec4_test.cc'],
+    include_directories : inc,
+    link_with : gtest_lib_native,
+    dependencies : gtest_dep,
+    native : true)
+
 
 test('Vect4 Test', e1)
+test('Vect4 Test native', e2)
 
 
